@@ -1,0 +1,35 @@
+================================================================================
+SHOPEASY INC. - GLOBAL VENDOR & SUPPLIER COMPLIANCE POLICY (2026)
+================================================================================
+
+Welcome to ShopEasy Inc. (Global Online Shopping & Cloud Marketplace).
+All external vendors, IT suppliers, logistics partners, and software contractors
+must strictly comply with these 6 mandatory business and security rules:
+
+RULE 1: PAYMENT & INVOICE TIMELINE
+- Standard Rule: ShopEasy pays all vendor invoices within Net 45 days (45 days after receiving the invoice).
+- Violation: Demanding payment in 15 days, 30 days, or demanding upfront advance payment is strictly NON-COMPLIANT.
+- Currency: All commercial commitments must be denominated in US Dollars (USD).
+
+RULE 2: DAMAGE RECOVERY & LIABILITY LIMITS
+- Minimum Liability Cap: If a vendor's system crashes or causes financial loss, the vendor must be liable for at least 2x (two times) the total annual contract value.
+- Data Leak Exception (Uncapped): If customer data is leaked or stolen due to the vendor, there must be NO LIMIT (uncapped liability) on what the vendor owes for damages.
+- Absolute Prohibition: Fixed liability caps below $500,000, or clauses limiting liability to "only 1 month of fees", are strictly prohibited and rejected.
+
+RULE 3: CUSTOMER DATA PRIVACY & STORAGE LOCATION
+- Storage Location: All ShopEasy customer information (names, phone numbers, delivery addresses, card tokens) must be stored ONLY in secure AWS/Azure cloud data centers in the United States (US) or European Union (EU).
+- Offshore Ban: Storing or routing customer data through unauthorized data centers (e.g., Singapore, Malaysia, China, Russia) is strictly prohibited.
+- Data Purge on Exit: When the contract ends, the vendor must completely wipe and delete all customer data within thirty (30) days and provide a signed Certificate of Destruction.
+
+RULE 4: SECURITY BREACH WARNING TIMELINE
+- 24-Hour Alert: If the vendor suffers a hacker attack, ransomware, or customer data leak, they must notify ShopEasy's Security Operations Center (security@shopeasy.com) within twenty-four (24) hours of detection.
+- Violation: Waiting "14 days to finish internal investigations" before alerting ShopEasy is strictly NON-COMPLIANT.
+- Audit Rights: ShopEasy reserves the right to review the vendor's SOC 2 Type II security audit report every year.
+
+RULE 5: SOFTWARE & WORK PRODUCT OWNERSHIP
+- Work Made for Hire: All custom software, integrations, websites, and documentation built specifically for ShopEasy belongs 100% to ShopEasy from day one.
+- Vendor Tools: If the vendor uses pre-existing tools, ShopEasy must receive a permanent, royalty-free, worldwide license to use them.
+
+RULE 6: DISPUTE LOCATION & GOVERNING LAW
+- Legal Jurisdiction: In case of any court dispute or breach of agreement, all matters must be governed by and decided under the laws of the State of Delaware, United States.
+================================================================================

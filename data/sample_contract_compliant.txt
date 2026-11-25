@@ -1,0 +1,21 @@
+SERVICE AGREEMENT (VENDOR: APEX SECURE CLOUD & LOGISTICS)
+
+This Service Agreement is entered into between Apex Secure Cloud Corp ("Vendor") and ShopEasy Inc. ("Client").
+
+Clause 1. Invoicing & Payment Terms:
+ShopEasy shall pay all verified vendor invoices within forty-five (45) calendar days from receipt of invoice (Net 45). All billing commitments and payments shall be denominated in USD.
+
+Clause 2. Limitation of Liability:
+Vendor's aggregate liability for operational errors shall be capped at two times (2x) the total annual contract value. Notwithstanding the foregoing, no limitation or liability cap shall apply to damages resulting from customer data privacy breaches, unauthorized disclosure of Client confidential information, gross negligence, or willful misconduct.
+
+Clause 3. Customer Data Sovereignty & Destruction:
+Vendor warrants that all ShopEasy customer information and order records shall reside exclusively within US-East AWS cloud regions. Within thirty (30) days following termination of this Agreement, Vendor shall permanently purge and delete all ShopEasy customer data and furnish a written Certificate of Destruction.
+
+Clause 4. Security Incident Reporting:
+Vendor agrees to notify ShopEasy's Security Operations Center at security@shopeasy.com within twenty-four (24) hours of discovering any verified or suspected data breach or cybersecurity incident.
+
+Clause 5. Software & Deliverables Ownership:
+All custom code, software, integrations, and work product developed for ShopEasy shall be designated as work made for hire, with 100% intellectual property ownership transferring to ShopEasy upon creation.
+
+Clause 6. Governing Law:
+This Agreement shall be construed and governed in accordance with the laws of the State of Delaware, USA.

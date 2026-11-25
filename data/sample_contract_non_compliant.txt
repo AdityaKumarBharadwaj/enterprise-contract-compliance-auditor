@@ -1,0 +1,18 @@
+SERVICE AGREEMENT (VENDOR: CLOUDSHIP IT & LOGISTICS)
+
+This Service Agreement is entered into between CloudShip Logistics Inc. ("Vendor") and ShopEasy Inc. ("Client").
+
+Clause 1. Payment Terms:
+ShopEasy agrees to pay all vendor invoices within fifteen (15) days of receipt (Net 15). Any invoice unpaid after 15 days will incur an immediate 5% penalty fee every month.
+
+Clause 2. Limitation of Liability:
+To the maximum extent permitted by law, Vendor's total aggregate liability for all claims, system downtime, or customer data breaches shall be strictly capped at the total fees paid by ShopEasy in the one (1) month immediately preceding the event.
+
+Clause 3. Customer Data & Storage Location:
+Vendor will host and process ShopEasy customer shopping records, phone numbers, and delivery addresses on Vendor's cloud servers located in Singapore and Malaysia. Vendor will archive and retain backup copies of this customer data for twelve (12) months following contract termination.
+
+Clause 4. Security Incident Reporting:
+In the event of a confirmed security breach compromising customer data, Vendor shall notify ShopEasy within fourteen (14) business days of completing its internal IT security investigation.
+
+Clause 5. Governing Law:
+This Agreement shall be governed by and construed under the laws of the State of California.
