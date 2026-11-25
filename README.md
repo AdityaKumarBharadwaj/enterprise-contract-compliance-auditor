@@ -6,18 +6,17 @@
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.30%2B-FF4B4B?style=flat&logo=streamlit&logoColor=white)](https://streamlit.io/)
 [![AWS Bedrock](https://img.shields.io/badge/AWS-Amazon%20Bedrock-232F3E?style=flat&logo=amazonaws&logoColor=FF9900)](https://aws.amazon.com/bedrock/)
 [![OpenSearch](https://img.shields.io/badge/Vector%20DB-OpenSearch%20Serverless-005EB8?style=flat&logo=opensearch&logoColor=white)](https://aws.amazon.com/opensearch-service/features/serverless/)
-[![License](https://img.shields.io/badge/License-MIT-green?style=flat)](LICENSE)
 
 ---
 
 ## 📌 Executive Overview
 
-Reviewing vendor contracts (Master Services Agreements, Cloud SaaS Agreements, Statements of Work) against internal procurement and regulatory policies is traditionally a manual, multi-day bottleneck. Static keyword searches miss semantic variations, while naive single-prompt LLMs hallucinate rules or miss nuanced risk carve-outs.
+Reviewing vendor contracts against internal procurement and compliance policies manually is time-consuming and error-prone.
 
-The **Enterprise Contract Compliance Auditor** automates this workflow with a **3-Tier Dynamic RAG system**:
-1. **Dynamic Query Decomposition:** Uses **Amazon Nova Micro** to read incoming contracts and dynamically generate targeted policy retrieval queries, preventing retrieval blind spots.
-2. **Hybrid Vector Retrieval:** Queries an **Amazon Bedrock Knowledge Base** backed by **OpenSearch Serverless**, deduplicating matching policy chunks in memory.
-3. **Deterministic Synthesis:** Evaluates clauses using **Amazon Nova Lite** (or Claude Haiku 4.5) strictly against retrieved ground truth at `temperature: 0.0`, outputting structured verdicts, severity ratings, and replacement redline contract language.
+The **Enterprise Contract Compliance Auditor** uses a **3-Tier Dynamic RAG pipeline** built on AWS Bedrock:
+1. **Dynamic Query Decomposition:** Uses **Amazon Nova Micro** (`amazon.nova-micro-v1:0`) to analyze the full incoming contract and generate 4–6 targeted policy retrieval queries (with a built-in fallback list if generation fails).
+2. **Multi-Query Knowledge Base Retrieval:** Queries an **Amazon Bedrock Knowledge Base** (`bedrock-agent-runtime`) for each query and deduplicates matching policy chunks in memory (falling back to a general sweep if nothing matches).
+3. **Policy-Grounded Synthesis:** Evaluates the contract clause-by-clause using **Amazon Nova Lite** (`amazon.nova-lite-v1:0`), **Amazon Nova Micro**, or **Anthropic Claude Haiku 4.5** at `temperature: 0.0`, returning structured JSON (parsed into a Markdown report), severity ratings, recommended redlines, and source citations.
 
 ---
 
@@ -40,21 +39,20 @@ The **Enterprise Contract Compliance Auditor** automates this workflow with a **
                                              ▼
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
 │  TIER 2 ── MULTI-QUERY RETRIEVAL & DEDUPLICATION (Bedrock Agent Runtime)               │
-│  • Bedrock Knowledge Base (OpenSearch Serverless Vector Index)                         │
-│  • Amazon Titan Text Embeddings v2 (Dense + Sparse Hybrid Search)                      │
-│  • Deduplicates retrieved policy chunks via text fingerprinting                        │
-│  • Caches S3 document URIs, relevance scores, and query triggers                       │
+│  • Queries Bedrock Knowledge Base (OpenSearch Serverless) via retrieve()               │
+│  • Deduplicates retrieved policy chunks in memory via text matching                    │
+│  • Collects S3 document URIs, relevance scores, and triggering queries                 │
 └────────────────────────────────────────────┬───────────────────────────────────────────┘
                                              │
-                               Retrieved Policy Chunks (Ground Truth)
+                               Retrieved Policy Chunks
                                              │
                                              ▼
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
-│  TIER 3 ── DETERMINISTIC AUDIT SYNTHESIS (Amazon Nova Lite / Claude Haiku 4.5)         │
-│  • Invokes Bedrock Converse API with prompt-anchored ground truth (temperature: 0.0)   │
-│  • Evaluates clause compliance: [COMPLIANT], [NON-COMPLIANT], or [MISSING]             │
+│  TIER 3 ── POLICY-GROUNDED AUDIT SYNTHESIS (Nova Lite / Nova Micro / Claude Haiku 4.5) │
+│  • Invokes Bedrock Converse API with retrieved policy chunks (temperature: 0.0)        │
+│  • Evaluates clause compliance: [COMPLIANT], [NON_COMPLIANT], or [MISSING]             │
 │  • Assigns risk severity: [HIGH], [MEDIUM], [LOW], or [NONE]                           │
-│  • Drafts ready-to-insert replacement redline contract language                        │
+│  • Drafts replacement redline contract language and formats Markdown report            │
 └────────────────────────────────────────────┬───────────────────────────────────────────┘
                                              │
                                              ▼
@@ -64,21 +62,21 @@ The **Enterprise Contract Compliance Auditor** automates this workflow with a **
 
 ### 3-Tier Model Cascading Breakdown
 
-| Tier | Component | Model / Engine | Latency | Purpose |
-|---|---|---|---|---|
-| **Tier 1: Triage** | Query Decomposition | Amazon Nova Micro (`amazon.nova-micro-v1:0`) | ~200 ms | Dissects the contract to generate focused search strings matching all obligations. |
-| **Tier 2: Retrieval** | Hybrid Vector Search | Bedrock Knowledge Base + OpenSearch Serverless | ~350 ms | Fetches semantically relevant policy chunks from S3 and deduplicates chunks. |
-| **Tier 3: Synthesis** | Compliance Reasoner | Amazon Nova Lite (`amazon.nova-lite-v1:0`) | ~1.2 s | Clause-by-clause audit against ground truth; writes executive verdict & redlines. |
+| Tier | Component | Model / Engine | Purpose |
+|---|---|---|---|
+| **Tier 1: Triage** | Query Decomposition | Amazon Nova Micro (`amazon.nova-micro-v1:0`) | Reads the full `contract_text` at `temperature: 0.0` to generate 4–6 search queries. |
+| **Tier 2: Retrieval** | Vector Search | Bedrock Knowledge Base (`bedrock-agent-runtime`) | Retrieves relevant policy chunks from S3/OpenSearch and deduplicates them. |
+| **Tier 3: Synthesis** | Compliance Reasoner | Amazon Nova Lite (`amazon.nova-lite-v1:0`) / Nova Micro / Claude Haiku 4.5 | Evaluates the contract against retrieved policy chunks (`temperature: 0.0`, `maxTokens: 4096`) and outputs verdict, findings, and redlines. |
 
 ---
 
 ## ✨ Key Features
 
-- **Zero-Hallucination Grounding:** The synthesis prompt strictly constrains the foundation model to retrieved Knowledge Base chunks at `temperature: 0.0`.
-- **Dynamic Policy Extraction:** Eliminates the rigidity of hardcoded search terms; unexpected contract provisions (e.g., offshore data replication, IP carve-outs) are dynamically searched.
-- **Actionable Redlines:** For every non-compliant or missing clause, the engine provides exact replacement legal language ready to paste into redline drafts.
-- **Traceable Citations:** Every finding links to an exact S3 policy document chunk, relevance score (e.g., `0.892`), and the triggering query.
-- **Runtime Model & Region Flexibility:** Seamlessly switch between Amazon Nova Lite, Amazon Nova Micro, and Anthropic Claude Haiku 4.5 across AWS regions directly from the UI.
+- **Policy-Grounded RAG (`temperature: 0.0`):** Injects retrieved Knowledge Base chunks into the synthesis prompt and uses greedy decoding (`temperature: 0.0`) to reduce variance, returning raw source citations for human verification. *(Note: `temperature: 0.0` does not guarantee zero hallucinations—legal review of the citations and findings is still required.)*
+- **Dynamic Policy Extraction:** Generates search queries directly from the contract text rather than relying solely on a static keyword list, with a 6-topic fallback taxonomy if Tier 1 fails.
+- **Actionable Redlines:** For non-compliant or missing clauses, outputs replacement contract language alongside the verdict (`APPROVED`, `NEEDS_AMENDMENT`, or `REJECTED`).
+- **Traceable Citations:** Each retrieved policy chunk includes its S3 document URI, relevance score, and triggering query.
+- **Runtime Model & Region Flexibility:** Switch between Amazon Nova Lite, Amazon Nova Micro, and Anthropic Claude Haiku 4.5 across `us-east-1`, `us-west-2`, `eu-central-1`, and `ap-southeast-1` from the Streamlit sidebar.
 
 ---
 
@@ -196,22 +194,17 @@ aws s3 cp data/company_policy.txt s3://<your-policy-bucket-name>/
 
 ---
 
-## 💰 Cost & Latency Economics
+## 📊 Observed Performance & Known Limitations
 
-By implementing **Model Cascading** (Nova Micro for query decomposition + Nova Lite for synthesis), this system delivers significant cost and performance advantages over single-tier frontier LLM setups:
+Measured end-to-end runs using `amazon.nova-micro-v1:0` (Tier 1) + `amazon.nova-lite-v1:0` (Tier 3) in `us-east-1`:
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ COST PER AUDIT: ~$0.0008                                                    │
-│                                                                             │
-│ • Tier 1 (Nova Micro, ~400 tokens):   $0.000014                             │
-│ • Tier 2 (OpenSearch Retrieval):      Serverless Base OCU                   │
-│ • Tier 3 (Nova Lite, ~2,200 tokens):  $0.000780                             │
-│                                                                             │
-│ TOTAL COST: Less than 1/10th of a cent per contract audit.                  │
-│ LATENCY: Sub-2 seconds total execution time.                                │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
+- **Observed Latency:** **~11–18 seconds** end-to-end across 6 test contracts (`14.88s` on `sample_contract_compliant.txt`, `15.26s` on `sample_contract_non_compliant.txt`, and `11.07s–18.17s` on stress-test contracts).
+- **Verbatim Quote Grounding:** **100%** verbatim `vendor_clause` substring match across all 33 non-missing findings in the 6 tested contracts.
+- **Verdict Accuracy on Sample Contracts:** Correctly returned `APPROVED` on `sample_contract_compliant.txt` and `REJECTED` on `sample_contract_non_compliant.txt`.
+- **Known Limitations:**
+  - **Prompt Injection Sensitivity:** Untrusted contract text is currently passed inside the same `user` prompt as the audit instructions; an adversarial prompt-injection test embedded in a contract successfully forced an `APPROVED` verdict.
+  - **Reasoning Edge Cases:** Nova Lite can occasionally miss nuanced exceptions (e.g., conflating a general liability cap with uncapped data-breach requirements) or flag over-literal matches (e.g., failing to infer that `"Virginia, United States"` satisfies US residency).
+  - **S3 Policy Sync:** Audits run against whatever policy documents are synced in your Bedrock Knowledge Base S3 bucket—ensure `data/company_policy.txt` and your S3 bucket stay in sync.
 
 ---
 
@@ -226,21 +219,15 @@ enterprise-contract-compliance-auditor/
 ├── .gitignore                          # Excludes secrets, venv, and local artifacts
 │
 └── data/
-    ├── company_policy.txt              # Baseline golden corporate compliance guidelines
-    ├── sample_contract_compliant.txt   # Fully compliant test agreement (passes audit)
-    └── sample_contract_non_compliant.txt # High-risk test agreement (triggers redlines)
+    ├── company_policy.txt              # Sample corporate compliance guidelines
+    ├── sample_contract_compliant.txt   # Compliant test agreement
+    └── sample_contract_non_compliant.txt # Non-compliant test agreement
 ```
 
 ---
 
-## 🔒 Enterprise Security & Compliance
+## 🔒 Security & AWS Data Handling
 
-- **VPC & Data Boundary:** All contract documents and policy chunks are processed entirely within your AWS tenant. No prompts or vendor data are sent to public third-party APIs.
-- **Zero Training Guarantee:** Amazon Bedrock foundation models do not retain or use customer inputs or outputs for model training.
-- **Credential Safety:** Supports standard AWS credential chains, IAM Identity Center (SSO), and temporary role assumption via `boto3`.
-
----
-
-## 📄 License
-
-This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
+- **AWS Account Boundary:** Requests are sent via `boto3` over TLS to your configured AWS regional Bedrock endpoints (`bedrock-runtime` and `bedrock-agent-runtime`).
+- **Model Training Policy:** Per AWS Bedrock service terms, Amazon Bedrock does not use customer prompts or outputs to train foundation models.
+- **Credential Safety:** Supports `.env` variables locally and standard `boto3` IAM roles / AWS SSO credentials in production. Keep `.env` out of version control (excluded in `.gitignore`).

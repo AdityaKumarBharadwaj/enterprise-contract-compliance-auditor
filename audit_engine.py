@@ -59,7 +59,7 @@ Output exactly 4 to 6 short, focused search queries (one per line) to retrieve m
 Do not number them. Do not include bullet points. Output only the plain queries, one per line.
 
 VENDOR CONTRACT:
-{contract_text[:3000]}
+{contract_text}
 """
     try:
         response = runtime_client.converse(
